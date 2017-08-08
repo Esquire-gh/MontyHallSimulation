@@ -1,5 +1,6 @@
 import random
 import json
+import threading
 
 class Simulation:
 	'''
@@ -14,8 +15,8 @@ class Simulation:
 		self.option = [1,2,3]
 		self.prize = ['goat', 'goat', 'car']
 		self.host_options = []
-		self.strategy = strategy
-		print("Starting New Game: ")
+		self.strategy = strategy #1 or 2 to represent user sticking with and changing 1st choice respectively
+		print("Starting New Game with Strategy: ", self.strategy)
 
 
 
@@ -73,7 +74,7 @@ class Simulation:
 		if self.strategy == 1: #strategy 1 means the user maintains his first choice
 			final_user_input = user_input
 		
-		elif self.strategy == 2:
+		elif self.strategy == 2: #strategy 2 means the user changges his first choice
 			final_user_input = random.choice(options_left)
 		
 		else:
@@ -87,37 +88,65 @@ class Simulation:
 		# Checking for winner or Loser 
 		if final_answer == car_index:
 			print("YOU WON!!!!!")
+			return 1;
 		else:
 			print("YOU LOSE!!!!")
+			return 0
 
 
 
-def main():
-	
-	#instance of newGame
-	newGame = Simulation(2)
+data = {}  
+data['strategy_1'] = {}
+data['strategy_1']['game_no'] = []
+data['strategy_1']['outcome'] = []
 
-	#getting the choices of doors and prices through shuffling
-	choices = newGame.get_choices()
+data['strategy_2'] = {}
+data['strategy_2']['game_no'] = []
+data['strategy_2']['outcome'] = []
 
-	#tracking car_index
-	car_index = newGame.check_car_index(choices)
+def store_data(strategy, outcome, game):
+	data['strategy_'+str(strategy)]['game_no'].append(game)
+	data['strategy_'+str(strategy)]['outcome'].append(outcome)
+	with open('data.json', 'w') as outfile:
+		json.dump(data, outfile)
 
-	#simulating user input
-	user_input = newGame.simulate_user_input()
 
-	#make host open a fake door
-	host_choice = newGame.hosts_dummy_choice(user_input, car_index, choices)
+def game(strategy):
+	for game_no in range(1,10001):
+		#instance of newGame
+		newGame = Simulation(strategy)
 
-	#get user options left
-	options_left = newGame.possible_options_left_for_user(user_input, host_choice)
-	
-	#asking for final answer
-	final_answer = newGame.get_confirmation(user_input, options_left)
+		#getting the choices of doors and prices through shuffling
+		choices = newGame.get_choices()
 
-	#CHECKING FOR WIN/LOSE
-	newGame.check_results(final_answer, car_index)
+		#tracking car_index
+		car_index = newGame.check_car_index(choices)
+
+		#simulating user input
+		user_input = newGame.simulate_user_input()
+
+		#make host open a fake door
+		host_choice = newGame.hosts_dummy_choice(user_input, car_index, choices)
+
+		#get user options left
+		options_left = newGame.possible_options_left_for_user(user_input, host_choice)
+			
+		#asking for final answer
+		final_answer = newGame.get_confirmation(user_input, options_left)
+
+		#CHECKING FOR WIN/LOSE
+		outcome = newGame.check_results(final_answer, car_index)
+
+		store_data(strategy, outcome, game_no)
+
+
+
+def Main():
+	strategy_one_thread =  threading.Thread(target=game, args=[1])
+	strategy_two_thread =  threading.Thread(target=game, args=[2])
+	strategy_one_thread.start()
+	strategy_two_thread.start()
 
 
 if __name__ == '__main__':
-	main()
+	Main()
