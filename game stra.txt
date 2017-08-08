@@ -1,0 +1,37 @@
+1. Have three options
+2. Make one car and two goats
+3. ask user to choose one
+4. Make host choose one of the other two but not the correct one.
+5. ask user if he wants to change his option
+6. User makes final decision
+7. Return the prize after user confirmation
+
+
+How to
+------
+option = [1,2,3]
+prize = [goat, goat, car]
+
+#create shuffling fuc()
+pairs = {
+	option[i]:prize[i]
+}
+
+Store pair-key with value = car
+
+get user input
+
+let host open option that is not the userinput/the carprize
+
+ask user if he wants to change his options
+
+confirm user input 
+
+check if he wins or not
+
+
+
+Start main
+create two threads one for each strategy
+store data in the same file
+
